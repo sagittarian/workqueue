@@ -163,7 +163,7 @@ class Queue(object):
         self.datadir = Path(datadir)
 
     def items(self):
-        """Return a list of pending tasks.
+        """Return a list of pending tasks (in no particular order).
 
         This is read from disk on every call.
 
