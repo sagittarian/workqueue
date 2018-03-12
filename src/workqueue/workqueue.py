@@ -4,6 +4,7 @@ import time
 from pathlib import Path
 
 from flask import Flask, request, render_template, url_for, redirect
+from flask.json import jsonify
 
 from .queue import Queue
 from . import default_settings
@@ -67,3 +68,15 @@ def delete():
     id = request.form['id']
     queue.delete_by_id(id)
     return redirect(url_for('itemlist'))
+
+
+@app.route('/api/next')
+def api_next():
+    task = queue.peek()
+    return jsonify(status='ok', task=task.asdict())
+
+
+@app.route('/api/complete', methods=['POST'])
+def api_complete():
+    task = queue.delete_by_id(request.json['id'])
+    return jsonify(status='ok')
