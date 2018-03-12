@@ -5,6 +5,6 @@ setup(
     name='workqueue',
     version="0.1",
     author="Adam Mesha",
-    packages=['workqueue'],
+    packages=['workqueue', 'queueworker'],
     package_dir={'': 'src'},
 )
