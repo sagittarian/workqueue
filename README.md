@@ -39,6 +39,11 @@ There is currently no locking of tasks to prevent multiple workers from
 processing the same task, thus only one worker at a time is currently
 supported.
 
+## Tests
+
+The test suit can be run using pytest.  Install it or all of
+`requirements-dev.txt` and then run the tests with `pytest`.
+
 
 ## Notes on architecture
 
