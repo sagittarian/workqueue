@@ -40,6 +40,7 @@ def itemlist():
 
 @app.route('/new', methods=['POST'])
 def new():
+    """Endpoint for adding a new task via a POST request."""
     payload = request.form['payload']
 
     try:
@@ -65,6 +66,7 @@ def new():
 
 @app.route('/delete', methods=['POST'])
 def delete():
+    """Endpoint for deleting a task via a POST request."""
     id = request.form['id']
     queue.delete_by_id(id)
     return redirect(url_for('itemlist'))
@@ -72,6 +74,7 @@ def delete():
 
 @app.route('/api/next')
 def api_next():
+    """API endpoint for retrieving the next task."""
     task = queue.peek()
     task_json = task and task.asdict()
     return jsonify(status='ok', task=task_json)
@@ -79,5 +82,6 @@ def api_next():
 
 @app.route('/api/complete', methods=['POST'])
 def api_complete():
+    """API endpoint for reporting on a completed task."""
     task = queue.delete_by_id(request.json['id'])
     return jsonify(status='ok')

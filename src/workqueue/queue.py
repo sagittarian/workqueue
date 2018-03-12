@@ -9,6 +9,7 @@ from uuid import uuid4
 
 @total_ordering
 class QueueTask(object):
+    """Base class to represent a task object."""
     sep = '_'
     priority_fmt = '{:08}'
     timestamp_format = '%Y-%m-%dT%H:%M:%S'
@@ -38,11 +39,13 @@ class QueueTask(object):
         self.id = id
 
     def pretty_exectime(self):
+        """Return a human readable timestamp of tasks's exectime."""
         if not self.exectime:
             return 'NOW'
         return datetime.isoformat(datetime.fromtimestamp(self.exectime))
 
     def asdict(self):
+        """Return a dict representation of the task."""
         return dict(
             payload=self.payload,
             priority=self.priority,
@@ -52,22 +55,21 @@ class QueueTask(object):
 
     @property
     def filename(self):
+        """Return the canonical name where this task should be saved."""
         timestamp = time.strftime(self.timestamp_format,
                                   time.gmtime(self.exectime))
         priority = self.priority_fmt.format(self.priority)
         name = self.sep.join((timestamp, priority, str(self.id)))
         return name + '.json'
 
-    @filename.setter
-    def filename(self, name):
-        self.__dict__[filename] = name
-
     def save(self):
+        """Save this task to disk."""
         serialized = json.dumps(self.asdict())
         path = self.datadir / self.filename
         path.write_text(serialized)
 
     def delete(self):
+        """Delete this task from disk."""
         path = self.datadir / self.filename
         path.unlink()
 
@@ -102,6 +104,16 @@ class FileQueueTask(QueueTask):
     """
 
     def __init__(self, path):
+        """Initialize a task from a path.
+
+        The task's exectime, priority, and id are parsed from the given
+        filename itself.  Additional information (i.e. the payload) will
+        be read from disk lazily only as needed.
+
+        Args:
+            path: The path to the saved task (a pathlib.Path object).
+
+        """
         self._filename = path.name
         datadir = path.parent
         stem = path.stem
@@ -119,6 +131,7 @@ class FileQueueTask(QueueTask):
 
     @property
     def payload(self):
+        """Lazily load and return the payload for this task."""
         if self._payload is None:
             path = self.datadir / self.filename
             data = json.loads(path.read_text())
@@ -131,16 +144,34 @@ class FileQueueTask(QueueTask):
 
 
 class Queue(object):
+    """Class representing a complete queue of pending tasks.
+
+    The queue object does not save any state internally other than the
+    directory in which to store the pending tasks, and each task is
+    saved in a separate file which includes a UUID as part of the
+    filename to eliminate the possibility of a collision, thus it should
+    be safe to use in multiple threads and processes (to the degree that
+    the system's filesystem itself is thread and process safe).
+
+    """
     def __init__(self, datadir):
+        """Initialize the Queue.
+
+        Args:
+            datadir: the directory in which pending tasks are stored
+        """
         self.datadir = Path(datadir)
 
     def items(self):
+        """Return a list of pending tasks.
+
+        This is read from disk on every call.
+
+        """
         return [FileQueueTask(path) for path in self.datadir.iterdir()]
 
     def peek(self):
-        """
-        Return the next item on the queue, or None if the queue is empty.
-        """
+        """Return the next pending task, or None if the queue is empty."""
         result = None
         # iterating through the items is slightly faster than sorting
         # and returning the first item, and works without change if the
@@ -151,10 +182,12 @@ class Queue(object):
         return result
 
     def add(self, **kwds):
+        """Add a new task to the queue."""
         item = QueueTask(datadir=self.datadir, **kwds)
         item.save()
 
     def delete_by_id(self, id):
+        """Delete the task with the given id."""
         for item in self.items():
             if item.id == id:
                 try:
