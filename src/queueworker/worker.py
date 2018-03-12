@@ -34,8 +34,8 @@ class Worker(object):
             fp.write(full_line)
 
     def get_task(self):
-        result = requests.get(self.next_url).json()
-        return result['task']
+        result = requests.get(self.next_url)
+        return result.json()['task']
 
     def report_complete(self, id):
         requests.post(self.complete_url, json=dict(id=id))
@@ -60,3 +60,5 @@ class Worker(object):
                 self.process_next_task()
         except KeyboardInterrupt:
             pass
+        except requests.exceptions.ConnectionError:
+            print('Cannot connect to server.')
