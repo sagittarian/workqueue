@@ -1,0 +1,16 @@
+{% extends "index.html" %}
+{% block info %}
+<ul>
+  {% for item in items %}
+    <li>
+      <form method="POST" action="{{ url_for('delete') }}">
+      "{{ item.payload }}" scheduled at {{ item.pretty_exectime() }},
+      priority {{ item.priority }} (id {{ item.id }}).
+      <input type="hidden" name="id" value="{{ item.id }}">
+      <input type="submit" value="Delete">
+      </form>
+    </li>
+  {% endfor %}
+</ul>
+
+{% endblock %}

@@ -1,0 +1,37 @@
+<!doctype html>
+<html>
+  <title>Work queue</title>
+  <body>
+    <div>
+      <h1><a href="{{ url_for('main') }}">Work queue</a></h1>
+      {% block info %}
+        {% if item %}
+          <p><a href="{{ url_for('itemlist') }}">List of current tasks</a></p>
+          <p>
+            Next task is "{{ item.payload | escape }}" scheduled at
+            {{ item.pretty_exectime() }},
+            priority {{ item.priority }} (id {{ item.id }}).
+          </p>
+        {% else %}
+          <p>No tasks.</p>
+        {% endif %}
+      {% endblock %}
+      <hr>
+      <form method="POST" action="{{ url_for('new') }}">
+        <h2>New task</h2>
+        <div>
+          <label>Payload: <input type="text" name="payload"></label>
+        </div>
+        <div>
+          <label>Priority: <input type="text" name="priority"
+                                  value="{{ default_priority }}"></label>
+        </div>
+        <div>
+          <label>Execution time (YYYY-mm-dd HH:MM:SS):
+            <input type="text" name="exectime"></label>
+        </div>
+        <input type="submit" value="Submit">
+      </form>
+    </div>
+  </body>
+</html>
