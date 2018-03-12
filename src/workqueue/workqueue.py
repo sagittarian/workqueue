@@ -73,7 +73,8 @@ def delete():
 @app.route('/api/next')
 def api_next():
     task = queue.peek()
-    return jsonify(status='ok', task=task.asdict())
+    task_json = task and task.asdict()
+    return jsonify(status='ok', task=task_json)
 
 
 @app.route('/api/complete', methods=['POST'])
